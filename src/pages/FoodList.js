@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getFoods } from '../api/requests';
-import { List, ListItem, ListItemText, Typography, Box, Paper, Divider, IconButton, TextField, CircularProgress, InputAdornment } from '@mui/material';
+import { getFoods, getScrapperFoods } from '../api/requests';
+import { List, ListItem, ListItemText, Typography, Box, Paper, Divider, IconButton, TextField, CircularProgress, InputAdornment, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import SearchIcon from '@mui/icons-material/Search';
@@ -50,6 +50,19 @@ const FoodList = () => {
     }
   };
 
+  const handleScrapperFetch = async () => {
+    setLoading(true);
+    try {
+      const data = await getScrapperFoods();
+      setFoods(data);
+      setFilteredFoods(data);
+    } catch (error) {
+      console.error('Error fetching scrapper foods:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box sx={{ padding: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
@@ -80,51 +93,59 @@ const FoodList = () => {
         </Box>
       ) : (
         <Paper elevation={4} sx={{ borderRadius: 2 }}>
-          <List>
-            {filteredFoods.map((food, index) => (
-              <React.Fragment key={food.id}>
-                <ListItem
-                  button
-                  onClick={() => handleFoodClick(food.id)}
-                  sx={{
-                    padding: 2,
-                    '&:hover': {
-                      backgroundColor: '#e0e0e0',
-                      cursor: 'pointer',
-                    },
-                  }}
-                >
-                  <ListItemText
-                    primary={food.name}
-                    secondary={
-                      <>
-                        <Typography component="span" variant="body2" color="textSecondary">
-                          Código: {food.code}
-                        </Typography>
-                        <br />
-                        <Typography component="span" variant="body2" color="textSecondary">
-                          Nome Científico: {food.scientificName}
-                        </Typography>
-                        <br />
-                        <Typography component="span" variant="body2" color="textSecondary">
-                          Grupo: {food.group}
-                        </Typography>
-                        <br />
-                        <Typography component="span" variant="body2" color="textSecondary">
-                          Marca: {food.brand}
-                        </Typography>
-                      </>
-                    }
-                    sx={{ color: '#333', fontWeight: 'medium' }}
-                  />
-                  <IconButton edge="end" aria-label="navigate">
-                    <ArrowForwardIosIcon />
-                  </IconButton>
-                </ListItem>
-                {index < filteredFoods.length - 1 && <Divider />}
-              </React.Fragment>
-            ))}
-          </List>
+          {filteredFoods.length > 0 ? (
+            <List>
+              {filteredFoods.map((food, index) => (
+                <React.Fragment key={food.id}>
+                  <ListItem
+                    button
+                    onClick={() => handleFoodClick(food.id)}
+                    sx={{
+                      padding: 2,
+                      '&:hover': {
+                        backgroundColor: '#e0e0e0',
+                        cursor: 'pointer',
+                      },
+                    }}
+                  >
+                    <ListItemText
+                      primary={food.name}
+                      secondary={
+                        <>
+                          <Typography component="span" variant="body2" color="textSecondary">
+                            Código: {food.code}
+                          </Typography>
+                          <br />
+                          <Typography component="span" variant="body2" color="textSecondary">
+                            Nome Científico: {food.scientificName}
+                          </Typography>
+                          <br />
+                          <Typography component="span" variant="body2" color="textSecondary">
+                            Grupo: {food.group}
+                          </Typography>
+                          <br />
+                          <Typography component="span" variant="body2" color="textSecondary">
+                            Marca: {food.brand}
+                          </Typography>
+                        </>
+                      }
+                      sx={{ color: '#333', fontWeight: 'medium' }}
+                    />
+                    <IconButton edge="end" aria-label="navigate">
+                      <ArrowForwardIosIcon />
+                    </IconButton>
+                  </ListItem>
+                  {index < filteredFoods.length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            </List>
+          ) : (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+              <Button variant="contained" color="primary" onClick={handleScrapperFetch}>
+                Carregar Alimentos do Scrapper
+              </Button>
+            </Box>
+          )}
         </Paper>
       )}
     </Box>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getFoodComponents } from '../api/requests';
+import { getFoodComponents, getScrapperFoodComponents } from '../api/requests';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -22,21 +22,34 @@ const FoodComponents = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchComponents = async () => {
-      try {
-        const data = await getFoodComponents(foodId);
-        setComponents(data || []);
-        setFoodName(data.foodName || '');
-      } catch (error) {
-        console.error('Error fetching components:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchComponents = async () => {
+    setLoading(true);
+    try {
+      const data = await getFoodComponents(foodId);
+      setComponents(data || []);
+      setFoodName(data.foodName || '');
+    } catch (error) {
+      console.error('Error fetching components:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchComponents();
   }, [foodId]);
+
+  const handleScrapperFetch = async () => {
+    setLoading(true);
+    try {
+      await getScrapperFoodComponents(foodId);
+      await fetchComponents(); // Tenta buscar os componentes novamente
+    } catch (error) {
+      console.error('Error fetching scrapper components:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box sx={{ padding: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
@@ -45,7 +58,7 @@ const FoodComponents = () => {
           Voltar
         </Button>
         <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
-          Componentes de food id: {foodId}
+          Componentes de {foodName}
         </Typography>
       </Box>
       {loading ? (
@@ -90,7 +103,9 @@ const FoodComponents = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={11} align="center">
-                    Nenhum componente encontrado.
+                    <Button variant="contained" color="primary" onClick={handleScrapperFetch}>
+                      Carregar Componentes do Scrapper
+                    </Button>
                   </TableCell>
                 </TableRow>
               )}
